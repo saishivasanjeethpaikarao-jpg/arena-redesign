@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arena — Online Execution Studio</title>
+<meta name="description" content="Send the details on WhatsApp. Arena turns your resume, presentation, poster, sheet or site into a polished final file — preview before you pay.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07070a; --ink:#f5f5f7; --mut:#a2a2ad; --dim:#71717c;
+  --org:#ff6a1f; --org2:#ffb35c; --line:rgba(255,255,255,.09);
+  --card:rgba(255,255,255,.035); --mono:'JetBrains Mono',monospace;
+  --grot:'Space Grotesk',sans-serif; --serif:'Instrument Serif',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);background-image:radial-gradient(90% 55% at 72% 8%,rgba(255,110,45,.14),transparent 60%),radial-gradient(70% 45% at 15% 22%,rgba(120,70,220,.10),transparent 60%),radial-gradient(60% 40% at 50% 55%,rgba(255,140,60,.05),transparent 65%);background-attachment:fixed;color:var(--ink);font-family:'Inter',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:var(--org);color:#0a0500}
+a{color:inherit;text-decoration:none}
+canvas#gl{position:fixed;inset:0;width:100vw;height:100vh;z-index:0}
+.noise{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;
+  background-image:radial-gradient(rgba(255,255,255,.8) 1px,transparent 1px);background-size:3px 3px}
+main,nav,footer{position:relative;z-index:2}
+
+/* ---------- nav ---------- */
+nav{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:50;
+  display:flex;align-items:center;gap:4px;padding:7px 9px;border-radius:99px;
+  background:rgba(10,10,14,.55);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  transition:box-shadow .3s}
+nav .lg{display:flex;align-items:center;gap:9px;font-family:var(--grot);font-weight:700;font-size:15px;padding:8px 14px 8px 10px}
+nav .mk{width:24px;height:24px;border-radius:7px;background:conic-gradient(from 210deg,var(--org),var(--org2),var(--org));display:flex;align-items:center;justify-content:center;font-size:13px;color:#140800;font-weight:700}
+nav .l{font-size:13px;color:#c9c9d2;padding:8px 13px;border-radius:99px;transition:.2s}
+nav .l:hover{color:#fff;background:rgba(255,255,255,.07)}
+nav .cta{background:var(--ink);color:#0a0a0c;font-weight:600;font-size:13px;padding:9px 17px;border-radius:99px;margin-left:5px;transition:.2s}
+nav .cta:hover{background:var(--org2)}
+@media(max-width:760px){nav .l{display:none}}
+
+/* ---------- hero ---------- */
+.shot *{transition:none!important;animation:none!important}
+.shot .hero{min-height:900px}
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:120px 24px 60px}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--org2);
+  border:1px solid rgba(255,150,80,.3);background:rgba(255,110,30,.07);padding:9px 19px;border-radius:99px;
+  opacity:0;transform:translateY(14px)}
+.eyebrow i{width:6px;height:6px;border-radius:50%;background:var(--org);box-shadow:0 0 10px var(--org);animation:pulse 2.2s infinite}
+@keyframes pulse{50%{opacity:.35}}
+h1{font-family:var(--grot);font-size:clamp(52px,9.5vw,116px);line-height:.98;font-weight:700;letter-spacing:-.035em;margin-top:34px;max-width:14ch}
+h1 .w{display:inline-block;overflow:hidden;vertical-align:bottom}
+h1 .w span{display:inline-block;transform:translateY(110%);transition:transform .9s cubic-bezier(.2,.7,.2,1)}
+h1 em{font-family:var(--serif);font-style:italic;font-weight:400;letter-spacing:-.01em;
+  background:linear-gradient(92deg,var(--org),var(--org2) 55%,var(--org));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{margin:28px auto 0;max-width:600px;font-size:17.5px;line-height:1.65;color:var(--mut);opacity:0;transform:translateY(14px)}
+.btns{margin-top:40px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;opacity:0;transform:translateY(14px)}
+.b1{display:inline-flex;align-items:center;gap:9px;background:#22c55e;color:#04120a;font-weight:600;font-size:15.5px;padding:16px 30px;border-radius:14px;transition:transform .18s,box-shadow .18s;box-shadow:0 0 0 rgba(34,197,94,0)}
+.b1:hover{transform:translateY(-2px);box-shadow:0 12px 34px rgba(34,197,94,.28)}
+.b2{display:inline-flex;align-items:center;border:1px solid rgba(255,255,255,.18);color:#ececf0;font-size:15.5px;padding:16px 30px;border-radius:14px;background:rgba(255,255,255,.04);backdrop-filter:blur(8px);transition:.2s}
+.b2:hover{border-color:rgba(255,255,255,.34);background:rgba(255,255,255,.08)}
+.trustchips{margin-top:46px;display:flex;gap:34px;flex-wrap:wrap;justify-content:center;font-family:var(--mono);font-size:12.5px;color:var(--dim);opacity:0;transform:translateY(14px)}
+.trustchips b{color:#e4e4e9;font-weight:500}
+.aud{margin-top:22px;font-family:var(--serif);font-style:italic;font-size:16px;color:#8d8d97;opacity:0;transition:opacity 1s .3s}
+.on .aud{opacity:1}
+.on .eyebrow,.on .sub,.on .btns,.on .trustchips{opacity:1;transform:none;transition:opacity .8s,transform .8s}
+.on h1 .w span{transform:none}
+
+/* ---------- marquee ---------- */
+.marq{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;padding:18px 0;background:rgba(255,255,255,.02)}
+.marq .track{display:flex;gap:0;width:max-content;animation:scroll 26s linear infinite}
+.marq span{font-family:var(--grot);font-weight:600;font-size:16px;letter-spacing:.06em;color:#c9c9d2;padding:0 26px;white-space:nowrap}
+.marq span i{font-family:var(--serif);font-style:italic;color:var(--org);padding-right:26px}
+@keyframes scroll{to{transform:translateX(-50%)}}
+
+/* ---------- sections ---------- */
+section{padding:110px 24px;max-width:1240px;margin:0 auto}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:20px;margin-bottom:46px;flex-wrap:wrap}
+.sec-title{font-family:var(--grot);font-size:clamp(30px,4.4vw,44px);font-weight:600;letter-spacing:-.025em}
+.sec-title em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--org2)}
+.sec-note{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.16em}
+.rv{opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s}
+.rv.in{opacity:1;transform:none}
+
+/* ---------- trust ---------- */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat{border:1px solid var(--line);background:var(--card);border-radius:18px;padding:26px 24px;backdrop-filter:blur(10px)}
+.stat .v{font-family:var(--grot);font-weight:600;font-size:22px;letter-spacing:-.01em}
+.stat .v em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--org2)}
+.stat .k{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.15em;margin-top:9px;text-transform:uppercase}
+@media(max-width:860px){.stats{grid-template-columns:1fr 1fr}}
+
+/* ---------- bento services ---------- */
+.bento{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{position:relative;border:1px solid var(--line);background:var(--card);border-radius:20px;padding:28px;overflow:hidden;
+  transition:transform .25s ease,border-color .25s;transform-style:preserve-3d;backdrop-filter:blur(10px)}
+.card::before{content:'';position:absolute;inset:0;border-radius:20px;opacity:0;transition:opacity .3s;
+  background:radial-gradient(500px circle at var(--mx,50%) var(--my,50%),rgba(255,120,40,.14),transparent 45%)}
+.card:hover::before{opacity:1}
+.card:hover{transform:translateY(-4px);border-color:rgba(255,140,60,.35)}
+.card .n{font-family:var(--mono);font-size:12px;color:var(--org2)}
+.card h3{font-family:var(--grot);font-size:21px;font-weight:600;margin:14px 0 10px;letter-spacing:-.015em}
+.card p{font-size:13.5px;color:var(--mut);line-height:1.6}
+.card .tags{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+.card .tags span{font-size:11.5px;color:#cfcfd8;border:1px solid rgba(255,255,255,.13);padding:5px 11px;border-radius:99px}
+.card .pr{margin-top:16px;font-family:var(--mono);font-size:12.5px;color:var(--org2)}
+.card.wide{grid-column:span 2;display:flex;justify-content:space-between;align-items:center;gap:20px;
+  background:linear-gradient(100deg,rgba(255,110,30,.15),rgba(255,255,255,.02));border-color:rgba(255,140,60,.3)}
+.card.wide h3{font-size:24px;margin:0 0 8px}
+.card.wide .pr{margin:0;white-space:nowrap}
+@media(max-width:860px){.bento{grid-template-columns:1fr}.card.wide{grid-column:span 1;flex-direction:column;align-items:flex-start}}
+
+/* ---------- samples ---------- */
+.samples{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.samp{position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--line);aspect-ratio:4/3;background:#0d0d11}
+.samp img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.samp:hover img{transform:scale(1.045)}
+.samp .tag{position:absolute;left:14px;bottom:14px;font-family:var(--mono);font-size:11.5px;color:#f0f0f3;
+  background:rgba(8,8,11,.65);border:1px solid rgba(255,255,255,.14);padding:7px 14px;border-radius:99px;backdrop-filter:blur(8px)}
+@media(max-width:860px){.samples{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.samples{grid-template-columns:1fr}}
+
+/* ---------- process ---------- */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.step{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:30px;backdrop-filter:blur(10px)}
+.step .no{font-family:var(--grot);font-size:44px;font-weight:700;letter-spacing:-.03em;
+  background:linear-gradient(180deg,rgba(255,255,255,.85),rgba(255,255,255,.25));-webkit-background-clip:text;background-clip:text;color:transparent}
+.step h3{font-family:var(--grot);font-size:19px;font-weight:600;margin:16px 0 9px}
+.step p{font-size:13.5px;color:var(--mut);line-height:1.6}
+@media(max-width:860px){.steps{grid-template-columns:1fr}}
+
+/* ---------- pricing ---------- */
+.prow{display:flex;align-items:center;gap:22px;padding:24px 8px;border-bottom:1px solid var(--line);transition:.2s}
+.prow:hover{background:rgba(255,255,255,.025)}
+.prow .pn{font-family:var(--mono);font-size:12px;color:var(--org2);width:40px}
+.prow .pt{font-family:var(--grot);font-weight:600;font-size:20px;letter-spacing:-.015em;flex:1}
+.prow .pd{color:var(--mut);font-size:13.5px;flex:1.4}
+.prow .pp{font-family:var(--mono);font-size:14px;color:#ececf0;white-space:nowrap}
+@media(max-width:760px){.prow{flex-wrap:wrap}.prow .pd{flex-basis:100%;order:4}}
+
+/* ---------- faq ---------- */
+details{border:1px solid var(--line);background:var(--card);border-radius:16px;margin-bottom:12px;overflow:hidden}
+summary{cursor:pointer;list-style:none;padding:20px 24px;font-family:var(--grot);font-weight:600;font-size:16.5px;display:flex;justify-content:space-between;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary::after{content:'+';font-family:var(--mono);color:var(--org2);font-size:18px;transition:transform .25s}
+details[open] summary::after{transform:rotate(45deg)}
+details .a{padding:0 24px 20px;color:var(--mut);font-size:14.5px;line-height:1.65}
+
+/* ---------- cta / footer ---------- */
+.cta-band{margin:0 24px;border-radius:28px;padding:90px 24px;text-align:center;position:relative;overflow:hidden;
+  background:linear-gradient(120deg,#ff5e1a,#ff9a3d 60%,#ff5e1a);color:#160800}
+.cta-band h2{font-family:var(--grot);font-size:clamp(38px,6vw,64px);font-weight:700;letter-spacing:-.03em;line-height:1.02}
+.cta-band h2 em{font-family:var(--serif);font-style:italic;font-weight:400}
+.cta-band p{margin:18px auto 32px;font-size:16.5px;font-weight:500;color:rgba(22,8,0,.78);max-width:520px}
+.cta-band .b3{display:inline-block;background:#0b0b0c;color:#fafafa;font-weight:600;font-size:16.5px;padding:18px 40px;border-radius:14px;transition:transform .18s}
+.cta-band .b3:hover{transform:translateY(-2px)}
+footer{padding:64px 24px 44px;max-width:1240px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}
+footer .f-l{font-family:var(--mono);font-size:11.5px;color:var(--dim);letter-spacing:.18em}
+footer .f-r{display:flex;gap:22px;font-size:13px;color:var(--mut)}
+footer .f-r a:hover{color:#fff}
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div class="noise"></div>
+
+<nav>
+  <a class="lg" href="#top"><span class="mk">A</span>ARENA</a>
+  <a class="l" href="#studios">Studios</a>
+  <a class="l" href="#work">Samples</a>
+  <a class="l" href="#pricing">Pricing</a>
+  <a class="l" href="#faq">FAQ</a>
+  <a class="cta" href="https://wa.me/917842076378?text=Hi%20Arena%2C%20I%20need%20a%20quote." target="_blank" rel="noopener">Get estimate ↗</a>
+</nav>
+
+<main id="top">
+  <header class="hero" id="hero">
+    <div class="eyebrow"><i></i>ONLINE EXECUTION STUDIO · INDIA</div>
+    <h1><span class="w"><span>Your&nbsp;work,</span></span><br><span class="w"><span><em>finished&nbsp;sharper.</em></span></span></h1>
+    <p class="sub">Send the details on WhatsApp. Arena turns your resume, presentation, poster, sheet or site into a polished final file — preview before you pay.</p>
+    <div class="btns">
+      <a class="b1" href="https://wa.me/917842076378?text=Hi%20Arena%2C%20I%20need%20a%20quote." target="_blank" rel="noopener">Get a quote on WhatsApp</a>
+      <a class="b2" href="#work">See sample work</a>
+    </div>
+    <div class="trustchips"><span><b>Same-day</b> small tasks</span><span><b>Preview → pay</b> zero risk</span><span><b>Telugu / English</b> support</span></div>
+    <div class="aud">Built for students · freshers · job seekers · small businesses</div>
+  </header>
+
+  <div class="marq"><div class="track" id="track">
+    <span>RESUMES<i>·</i></span><span>PRESENTATIONS<i>·</i></span><span>POSTERS<i>·</i></span><span>EXCEL &amp; DATA<i>·</i></span><span>WEBSITES<i>·</i></span><span>AI AUTOMATION<i>·</i></span>
+  </div></div>
+
+  <section id="trust">
+    <div class="stats">
+      <div class="stat rv"><div class="v">Same<em>-day</em></div><div class="k">small tasks</div></div>
+      <div class="stat rv"><div class="v">Preview <em>→</em> pay</div><div class="k">zero upfront risk</div></div>
+      <div class="stat rv"><div class="v">TE <em>/</em> EN</div><div class="k">support</div></div>
+      <div class="stat rv"><div class="v">Ready<em>-to-send</em></div><div class="k">final files</div></div>
+    </div>
+  </section>
+
+  <section id="studios">
+    <div class="sec-head rv"><div class="sec-title">Five studios, <em>one team.</em></div><div class="sec-note">SERVICES /01–05</div></div>
+    <div class="bento">
+      <div class="card rv"><div class="n">01</div><h3>Career &amp; Student Work</h3><p>Resumes that pass screens, decks that hold a room, assignments that read clean.</p><div class="tags"><span>Resume ₹199+</span><span>PPT ₹249+</span><span>LinkedIn ₹149+</span></div></div>
+      <div class="card rv"><div class="n">02</div><h3>Design &amp; Content</h3><p>Visuals that stop the scroll, in your brand colors — ready for print or post.</p><div class="tags"><span>Posters ₹99+</span><span>Posts ₹49+</span><span>Menus ₹199+</span></div></div>
+      <div class="card rv"><div class="n">03</div><h3>Business &amp; Data</h3><p>Clean spreadsheets, formatted docs, and reports your team can actually use.</p><div class="tags"><span>Excel cleanup</span><span>Invoices</span><span>Typing</span></div></div>
+      <div class="card rv"><div class="n">04</div><h3>Websites</h3><p>Portfolio, business and landing sites built end-to-end, with domain and basic SEO.</p><div class="tags"><span>Portfolio</span><span>Business site</span><span>Landing</span></div></div>
+      <div class="card wide rv"><div><h3>05 · AI &amp; Automation Studio</h3><p>Custom chatbots and AI agents that handle the repetitive work — so you don't have to.</p></div><div class="pr">from ₹2,999</div></div>
+    </div>
+  </section>
+
+  <section id="work">
+    <div class="sec-head rv"><div class="sec-title">Work that <em>sells itself.</em></div><div class="sec-note">REAL SAMPLES</div></div>
+    <div class="samples">
+      <div class="samp rv"><img src="./sample-resume.jpg" alt="Resume sample"><div class="tag">Resume · ATS-ready</div></div>
+      <div class="samp rv"><img src="./sample-ppt.jpg" alt="Presentation sample"><div class="tag">PPT · Project deck</div></div>
+      <div class="samp rv"><img src="./sample-deck.jpg" alt="Deck sample"><div class="tag">Deck · Clean layout</div></div>
+      <div class="samp rv"><img src="./sample-poster.jpg" alt="Poster sample"><div class="tag">Poster · Event</div></div>
+      <div class="samp rv"><img src="./sample-excel.jpg" alt="Excel sample"><div class="tag">Excel · Cleaned</div></div>
+      <div class="samp rv"><img src="./sample-portfolio.jpg" alt="Website sample"><div class="tag">Website · Portfolio</div></div>
+    </div>
+  </section>
+
+  <section id="process">
+    <div class="sec-head rv"><div class="sec-title">How it <em>works.</em></div><div class="sec-note">3 STEPS</div></div>
+    <div class="steps">
+      <div class="step rv"><div class="no">01</div><h3>Send the brief</h3><p>Message us on WhatsApp with what you need — Telugu or English, a rough idea is enough.</p></div>
+      <div class="step rv"><div class="no">02</div><h3>Get a preview</h3><p>We build it and send back a preview. Small tasks usually land the same day.</p></div>
+      <div class="step rv"><div class="no">03</div><h3>Pay when it's right</h3><p>Pay only when the preview looks right. Get the final, ready-to-send file.</p></div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <div class="sec-head rv"><div class="sec-title">Simple <em>pricing.</em></div><div class="sec-note">STARTING RATES · FINAL QUOTE ON WHATSAPP</div></div>
+    <div class="rv">
+      <div class="prow"><div class="pn">01</div><div class="pt">Career &amp; Student Work</div><div class="pd">Resumes, cover letters, LinkedIn bios, PPTs, assignments</div><div class="pp">from ₹99</div></div>
+      <div class="prow"><div class="pn">02</div><div class="pt">Design &amp; Content</div><div class="pd">Posters, Instagram posts, festival offers, menus, certificates</div><div class="pp">from ₹49</div></div>
+      <div class="prow"><div class="pn">03</div><div class="pt">Business &amp; Data</div><div class="pd">Excel cleanup, data entry, PDF to Word, invoices, reports</div><div class="pp">from ₹99</div></div>
+      <div class="prow"><div class="pn">04</div><div class="pt">Websites &amp; Presence</div><div class="pd">Portfolio, business and landing sites, domain setup, SEO</div><div class="pp">from ₹999</div></div>
+      <div class="prow"><div class="pn">05</div><div class="pt">AI &amp; Automation</div><div class="pd">Custom chatbots, AI agents and workflow automations</div><div class="pp">from ₹2,999</div></div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="sec-head rv"><div class="sec-title">Questions, <em>answered.</em></div><div class="sec-note">FAQ</div></div>
+    <div class="rv">
+      <details open><summary>How do I place an order?</summary><div class="a">Message us on WhatsApp (+91 78420 76378) with what you need. We confirm the scope and price, build it, and send you a preview.</div></details>
+      <details><summary>Do I pay before seeing the work?</summary><div class="a">No. You always see a preview first. Pay only when it looks right — zero upfront risk.</div></details>
+      <details><summary>How fast is delivery?</summary><div class="a">Small tasks (resumes, posts, posters) usually land the same day. Bigger projects move in clear, agreed steps with previews along the way.</div></details>
+      <details><summary>Can I talk in Telugu?</summary><div class="a">Yes — full support in Telugu and English, whatever's comfortable for you.</div></details>
+    </div>
+  </section>
+
+  <div class="cta-band rv">
+    <h2>Send the brief.<br><em>Get the file.</em></h2>
+    <p>Resume, deck, poster, sheet, site or an AI bot for your business — polished and ready to send.</p>
+    <a class="b3" href="https://wa.me/917842076378?text=Hi%20Arena%2C%20I%20need%20a%20quote." target="_blank" rel="noopener">Start on WhatsApp →</a>
+  </div>
+
+  <footer>
+    <div class="f-l">ARENA · ONLINE EXECUTION STUDIO · HYDERABAD, IN</div>
+    <div class="f-r">
+      <a href="mailto:ai.withaura23@gmail.com">Email</a>
+      <a href="https://www.youtube.com/@ai.withaura" target="_blank" rel="noopener">YouTube</a>
+      <a href="https://github.com/saishivasanjeethpaikarao-jpg" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </footer>
+</main>
+
+<script>
+// ---- animated shader background (ember aurora, mouse-reactive) ----
+(function(){
+const c=document.getElementById('gl');const gl=c.getContext('webgl',{preserveDrawingBuffer:true});if(!gl){c.style.background='radial-gradient(900px 500px at 70% 10%,rgba(255,94,26,.25),#07070a)';return;}
+function rs(){c.width=innerWidth*.5;c.height=innerHeight*.5;gl.viewport(0,0,c.width,c.height);}addEventListener('resize',rs);rs();
+const vs='attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+const fs=`precision highp float;uniform float t;uniform vec2 r;uniform vec2 m;
+float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
+float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*n(p);p*=2.03;a*=.5;}return v;}
+void main(){
+vec2 uv=gl_FragCoord.xy/r;vec2 p=(uv*vec2(r.x/r.y,1.)-m*.06)*2.2;
+float f1=fbm(p+vec2(t*.05,-t*.03)+fbm(p*1.6+t*.04)*1.4);
+float f2=fbm(p*1.3-vec2(t*.04,t*.02)+fbm(p*2.-t*.03)*1.2);
+vec3 base=vec3(.027,.027,.04);
+vec3 org=vec3(1.,.42,.1);vec3 vio=vec3(.4,.2,.85);vec3 teal=vec3(.05,.5,.6);
+vec3 col=base;
+col+=org*f1*.6;
+col+=vio*f2*.42;
+col+=teal*pow(fbm(p*2.2+t*.06),3.)*.4;
+col*=1.-.35*length(uv-vec2(.5,.55));
+gl_FragColor=vec4(col,1.);}`;
+function sh(t,s){const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return o;}
+const pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,vs));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,fs));gl.linkProgram(pr);gl.useProgram(pr);
+const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);
+gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+const lp=gl.getAttribLocation(pr,'p');gl.enableVertexAttribArray(lp);gl.vertexAttribPointer(lp,2,gl.FLOAT,false,0,0);
+const uT=gl.getUniformLocation(pr,'t'),uR=gl.getUniformLocation(pr,'r'),uM=gl.getUniformLocation(pr,'m');
+let mx=.5,my=.5;addEventListener('pointermove',e=>{mx=e.clientX/innerWidth;my=1-e.clientY/innerHeight;});
+function frame(ts){gl.uniform1f(uT,ts*.0006);gl.uniform2f(uR,c.width,c.height);gl.uniform2f(uM,mx,my);gl.drawArrays(gl.TRIANGLES,0,3);}
+if(location.search.indexOf('shot')>=0){frame(12000);
+ if(location.search.indexOf('dbg')>=0){try{var px=new Uint8Array(400);gl.readPixels(Math.floor(gl.drawingBufferWidth/2)-5,Math.floor(gl.drawingBufferHeight/2)-5,10,10,gl.RGBA,gl.UNSIGNED_BYTE,px);var s=0;for(var i=0;i<400;i++)s+=px[i];document.title='PX:'+s+' err:'+gl.getError();}catch(e){document.title='EXC:'+e.message;}}
+}else{(function loop(ts){frame(ts);requestAnimationFrame(loop);})(0);}
+})();
+
+// ---- hero entrance ----
+if(location.search.indexOf('shot')>=0){document.documentElement.classList.add('shot');document.getElementById('hero').classList.add('on');document.querySelectorAll('.rv').forEach(el=>el.classList.add('in'));}
+addEventListener('load',()=>setTimeout(()=>document.getElementById('hero').classList.add('on'),60));
+
+// ---- scroll reveals ----
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.12});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+
+// ---- card tilt + glow follow ----
+document.querySelectorAll('.card,.samp,.stat').forEach(el=>{
+  el.addEventListener('pointermove',e=>{const r=el.getBoundingClientRect();
+    el.style.setProperty('--mx',(e.clientX-r.left)+'px');el.style.setProperty('--my',(e.clientY-r.top)+'px');});
+});
+
+// ---- marquee duplicate for seamless loop ----
+const tr=document.getElementById('track');tr.innerHTML+=tr.innerHTML;
+</script>
+</body>
+</html>
