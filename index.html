@@ -679,8 +679,15 @@ document.getElementById('vd-go').addEventListener('click',()=>{
   }
   // reveals (GSAP replaces the IO fallback)
   gsap.set('.rv',{opacity:0,y:26});
-  ScrollTrigger.batch('.rv',{start:'top 90%',once:true,
-    onEnter:function(els){gsap.to(els,{opacity:1,y:0,duration:1.05,stagger:.09,ease:'power3.out',overwrite:true});}});
+  function reveal(els){els=els.filter(function(e){return !e.dataset.done;});
+    els.forEach(function(e){e.dataset.done=1;});
+    if(els.length)gsap.to(els,{opacity:1,y:0,duration:1.05,stagger:.09,ease:'power3.out',overwrite:true});}
+  ScrollTrigger.batch('.rv',{start:'top 90%',once:true,onEnter:reveal});
+  // safety net: anything entering the viewport that a trigger missed still reveals
+  setInterval(function(){var els=[];
+    document.querySelectorAll('.rv:not([data-done])').forEach(function(el){
+      if(el.getBoundingClientRect().top<innerHeight*.95)els.push(el);});
+    if(els.length)reveal(els);},1100);
   // hero intro
   var tl=gsap.timeline({delay:.15});
   tl.to('.hl-i',{y:0,duration:1.15,ease:'power4.out',stagger:.12})
@@ -764,4 +771,4 @@ try{
 }catch(e){/* 2D wireframe stays as fallback */}
 </script>
 </body>
-  </html>
+                                                             </html>
